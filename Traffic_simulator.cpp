@@ -110,4 +110,100 @@ public:
             vehicles[index] = vehicle;
         }
     }
-    };
+
+    void run() {
+        int cycles;
+        cout << "Enter the number of cycles for the simulation: ";
+        cin >> cycles;
+
+        cout << "\n===========================\n";
+        cout << "   Traffic Simulation\n";
+        cout << "===========================\n\n";
+
+        for (int i = 0; i < cycles; ++i) {
+            cout << "========== Cycle " << i + 1 << " ==========\n";
+
+            for (size_t j = 0; j < trafficLights.size(); ++j) {
+                if (j == i % trafficLights.size()) {
+                    trafficLights[j].setYellow();  // Set yellow before green
+                } else {
+                    trafficLights[j].setRed();  // Other roads are red
+                }
+            }
+
+            cout << "\n** Yellow Alert **\n";
+            printTrafficLightStates();
+            handleVehicleActions(LightState::YELLOW);
+
+            trafficLights[i % trafficLights.size()].setGreen();
+
+            cout << "\n** Green Light **\n";
+            printTrafficLightStates();
+            handleVehicleActions(LightState::GREEN);
+
+            cout << "===========================\n\n";
+        }
+
+        cout << "Simulation ended.\n";
+    }
+
+private:
+    int numVehicles;
+    int numRoads;
+    Vehicle* vehicles;  // Array of objects
+    vector<TrafficLight> trafficLights;
+
+    void printTrafficLightStates() const {
+        for (size_t j = 0; j < trafficLights.size(); ++j) {
+            cout << "Road " << j + 1 << ": Traffic light is " << trafficLights[j].getStateString() << ".\n";
+        }
+    }
+
+    void handleVehicleActions(LightState lightState) {
+        for (int i = 0; i < numVehicles; ++i) {
+            LightState roadLightState = trafficLights[vehicles[i].getRoadIndex()].getState();
+            if (roadLightState == LightState::GREEN || vehicles[i].isEmergencyVehicle()) {
+                vehicles[i].move();
+            } else if (roadLightState == LightState::YELLOW) {
+                vehicles[i].slowDown();
+            } else {
+                vehicles[i].stop();
+            }
+        }
+    }
+};
+
+int main() {
+    int numVehicles, numRoads;
+
+    cout << "Enter the number of roads (intersections): ";
+    cin >> numRoads;
+
+    cout << "Enter the number of vehicles in the simulation: ";
+    cin >> numVehicles;
+
+    TrafficSimulation simulation(numVehicles, numRoads);
+
+    for (int i = 0; i < numVehicles; ++i) {
+        string name;
+        int roadIndex;
+        bool isEmergency;
+        cout << "Enter the name of vehicle " << i + 1 << ": ";
+        cin >> name;
+        cout << "Enter the road index (0 to " << numRoads - 1 << ") for this vehicle: ";
+        cin >> roadIndex;
+        cout << "Is this vehicle an emergency vehicle? (1 for Yes, 0 for No): ";
+        cin >> isEmergency;
+
+        Vehicle vehicle;
+        vehicle.setName(name);
+        vehicle.setRoadIndex(roadIndex);
+        vehicle.setIsEmergency(isEmergency);
+
+        simulation.addVehicle(vehicle, i);  // Add vehicle to the array
+    }
+
+    simulation.run();
+
+    return 0;
+}
