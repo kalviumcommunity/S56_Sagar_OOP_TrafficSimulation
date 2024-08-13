@@ -5,11 +5,6 @@
 
 using namespace std;
 
-enum class LightState  {
-    RED,
-    YELLOW,
-    GREEN
-};
 
 class Vehicle {
 public:
