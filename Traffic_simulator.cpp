@@ -2,9 +2,10 @@
 #include <vector>
 #include <string>
 #include <iomanip> 
+
 using namespace std;
 
-enum class LightState {
+enum class LightState  {
     RED,
     YELLOW,
     GREEN
