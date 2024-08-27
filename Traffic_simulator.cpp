@@ -5,6 +5,7 @@
 
 using namespace std;
 
+enum class LightState { RED, YELLOW, GREEN };
 
 class Vehicle {
 public:
@@ -34,8 +35,12 @@ public:
     int getRoadIndex() const {
         return roadIndex;
     }
-};
 
+private:
+    string name;
+    int roadIndex;
+    bool isEmergency;
+};
 
 class TrafficLight {
 public:
@@ -70,9 +75,6 @@ private:
     LightState state;
 };
 
-
-
-
 class TrafficSimulation {
 public:
     TrafficSimulation(int numVehicles, int numRoads)
@@ -90,4 +92,41 @@ public:
             vehicles[index] = vehicle;
         }
     }
+
+    void simulateTraffic() {
+        for (int i = 0; i < numRoads; ++i) {
+            cout << "Traffic light on road " << i + 1 << " is " << trafficLights[i].getStateString() << ".\n";
+        }
+
+        for (int i = 0; i < numVehicles; ++i) {
+            if (vehicles[i].isEmergencyVehicle()) {
+                trafficLights[vehicles[i].getRoadIndex()].setGreen();
+                vehicles[i].move();
+            } else {
+                vehicles[i].stop();
+            }
+        }
+    }
+
+private:
+    int numVehicles;
+    int numRoads;
+    Vehicle* vehicles;
+    vector<TrafficLight> trafficLights;
 };
+
+int main() {
+    TrafficSimulation simulation(3, 3);
+
+    Vehicle car("Car", 0);
+    Vehicle bike("Bike", 1);
+    Vehicle ambulance("Ambulance", 2, true);
+
+    simulation.addVehicle(car, 0);
+    simulation.addVehicle(bike, 1);
+    simulation.addVehicle(ambulance, 2);
+
+    simulation.simulateTraffic();
+
+    return 0;
+}
