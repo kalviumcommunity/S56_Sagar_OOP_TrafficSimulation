@@ -10,13 +10,10 @@ enum class LightState {
     GREEN
 };
 
-
 class Vehicle {
 public:
-    
     Vehicle() : name("Unknown"), roadIndex(0), isEmergency(false) {}
 
-   
     Vehicle(const string& name, int roadIndex, bool isEmergency = false)
         : name(name), roadIndex(roadIndex), isEmergency(isEmergency) {}
 
@@ -97,17 +94,31 @@ class TrafficSimulation {
 public:
     TrafficSimulation(int numVehicles, int numRoads)
         : numVehicles(numVehicles), numRoads(numRoads) {
-        vehicles = new Vehicle[numVehicles];  // Array of objects
-        trafficLights.resize(numRoads);
+        vehicles = new Vehicle*[numVehicles];  // Array of pointers to Vehicle objects
+        for (int i = 0; i < numVehicles; ++i) {
+            vehicles[i] = new Vehicle();  // Allocate each Vehicle object
+        }
+        trafficLights = new TrafficLight*[numRoads];  // Array of pointers to TrafficLight objects
+        for (int i = 0; i < numRoads; ++i) {
+            trafficLights[i] = new TrafficLight();  // Allocate each TrafficLight object
+        }
     }
 
     ~TrafficSimulation() {
-        delete[] vehicles;  // Free allocated memory for vehicles
+        for (int i = 0; i < numVehicles; ++i) {
+            delete vehicles[i];  // Free each Vehicle object
+        }
+        delete[] vehicles;  // Free the array of pointers to Vehicle objects
+        
+        for (int i = 0; i < numRoads; ++i) {
+            delete trafficLights[i];  // Free each TrafficLight object
+        }
+        delete[] trafficLights;  // Free the array of pointers to TrafficLight objects
     }
 
     void addVehicle(const Vehicle& vehicle, int index) {
         if (index < numVehicles) {
-            vehicles[index] = vehicle;
+            *vehicles[index] = vehicle;
         }
     }
 
@@ -123,19 +134,20 @@ public:
         for (int i = 0; i < cycles; ++i) {
             cout << "========== Cycle " << i + 1 << " ==========\n";
 
-            for (size_t j = 0; j < trafficLights.size(); ++j) {
-                if (j == i % trafficLights.size()) {
-                    trafficLights[j].setYellow();  // Set yellow before green
+            for (int j = 0; j < numRoads; ++j) {
+                if (j == i % numRoads) {
+                    trafficLights[j]->setYellow();  // Set yellow before green
                 } else {
-                    trafficLights[j].setRed();  // Other roads are red
+                    trafficLights[j]->setRed();  // Other roads are red
                 }
             }
 
             cout << "\n** Yellow Alert **\n";
             printTrafficLightStates();
+            
             handleVehicleActions(LightState::YELLOW);
 
-            trafficLights[i % trafficLights.size()].setGreen();
+            trafficLights[i % numRoads]->setGreen();
 
             cout << "\n** Green Light **\n";
             printTrafficLightStates();
@@ -150,24 +162,24 @@ public:
 private:
     int numVehicles;
     int numRoads;
-    Vehicle* vehicles;  // Array of objects
-    vector<TrafficLight> trafficLights;
+    Vehicle** vehicles;  // Array of pointers to Vehicle objects
+    TrafficLight** trafficLights;  // Array of pointers to TrafficLight objects
 
     void printTrafficLightStates() const {
-        for (size_t j = 0; j < trafficLights.size(); ++j) {
-            cout << "Road " << j + 1 << ": Traffic light is " << trafficLights[j].getStateString() << ".\n";
+        for (int j = 0; j < numRoads; ++j) {
+            cout << "Road " << j + 1 << ": Traffic light is " << trafficLights[j]->getStateString() << ".\n";
         }
     }
 
     void handleVehicleActions(LightState lightState) {
         for (int i = 0; i < numVehicles; ++i) {
-            LightState roadLightState = trafficLights[vehicles[i].getRoadIndex()].getState();
-            if (roadLightState == LightState::GREEN || vehicles[i].isEmergencyVehicle()) {
-                vehicles[i].move();
+            LightState roadLightState = trafficLights[vehicles[i]->getRoadIndex()]->getState();
+            if (roadLightState == LightState::GREEN || vehicles[i]->isEmergencyVehicle()) {
+                vehicles[i]->move();
             } else if (roadLightState == LightState::YELLOW) {
-                vehicles[i].slowDown();
+                vehicles[i]->slowDown();
             } else {
-                vehicles[i].stop();
+                vehicles[i]->stop();
             }
         }
     }
@@ -195,11 +207,7 @@ int main() {
         cout << "Is this vehicle an emergency vehicle? (1 for Yes, 0 for No): ";
         cin >> isEmergency;
 
-        Vehicle vehicle;
-        vehicle.setName(name);
-        vehicle.setRoadIndex(roadIndex);
-        vehicle.setIsEmergency(isEmergency);
-
+        Vehicle vehicle(name, roadIndex, isEmergency);
         simulation.addVehicle(vehicle, i);  // Add vehicle to the array
     }
 
@@ -207,3 +215,8 @@ int main() {
 
     return 0;
 }
+
+
+
+
+
