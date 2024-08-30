@@ -51,11 +51,24 @@ public:
         this->isEmergency = isEmergency;
     }
 
+    static int getTotalVehicles() {
+        return totalVehicles;
+    }
+
+    static void incrementTotalVehicles() {
+        ++totalVehicles;
+    }
+
 private:
     string name;
     int roadIndex;
     bool isEmergency;
+
+    static int totalVehicles;  // Static variable to keep track of total vehicles
 };
+
+// Initialize static member
+int Vehicle::totalVehicles = 0;
 
 class TrafficLight {
 public:
@@ -86,9 +99,22 @@ public:
         }
     }
 
+    static int getTotalTrafficLights() {
+        return totalTrafficLights;
+    }
+
+    static void incrementTotalTrafficLights() {
+        ++totalTrafficLights;
+    }
+
 private:
     LightState state;
+
+    static int totalTrafficLights;  // Static variable to keep track of total traffic lights
 };
+
+// Initialize static member
+int TrafficLight::totalTrafficLights = 0;
 
 class TrafficSimulation {
 public:
@@ -97,10 +123,12 @@ public:
         vehicles = new Vehicle*[numVehicles];  // Array of pointers to Vehicle objects
         for (int i = 0; i < numVehicles; ++i) {
             vehicles[i] = new Vehicle();  // Allocate each Vehicle object
+            Vehicle::incrementTotalVehicles();  // Increment the total vehicle count
         }
         trafficLights = new TrafficLight*[numRoads];  // Array of pointers to TrafficLight objects
         for (int i = 0; i < numRoads; ++i) {
             trafficLights[i] = new TrafficLight();  // Allocate each TrafficLight object
+            TrafficLight::incrementTotalTrafficLights();  // Increment the total traffic light count
         }
     }
 
@@ -157,6 +185,8 @@ public:
         }
 
         cout << "Simulation ended.\n";
+        cout << "Total Vehicles: " << Vehicle::getTotalVehicles() << endl;
+        cout << "Total Traffic Lights: " << TrafficLight::getTotalTrafficLights() << endl;
     }
 
 private:
@@ -215,8 +245,3 @@ int main() {
 
     return 0;
 }
-
-
-
-
-
