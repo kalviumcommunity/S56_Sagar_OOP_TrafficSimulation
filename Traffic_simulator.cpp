@@ -51,10 +51,12 @@ public:
         this->isEmergency = isEmergency;
     }
 
+    // Static Member Function to get total vehicles
     static int getTotalVehicles() {
         return totalVehicles;
     }
 
+    // Static Member Function to increment total vehicles
     static void incrementTotalVehicles() {
         ++totalVehicles;
     }
@@ -99,10 +101,12 @@ public:
         }
     }
 
+    // Static Member Function to get total traffic lights
     static int getTotalTrafficLights() {
         return totalTrafficLights;
     }
 
+    // Static Member Function to increment total traffic lights
     static void incrementTotalTrafficLights() {
         ++totalTrafficLights;
     }
