@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <iomanip> 
+#include <iomanip>
 using namespace std;
 
 enum class LightState {
@@ -17,6 +17,36 @@ public:
     Vehicle(const string& name, int roadIndex, bool isEmergency = false)
         : name(name), roadIndex(roadIndex), isEmergency(isEmergency) {}
 
+    // Accessor (getter) for vehicle name
+    string getName() const {
+        return name;
+    }
+
+    // Mutator (setter) for vehicle name
+    void setName(const string& name) {
+        this->name = name;
+    }
+
+    // Accessor for road index
+    int getRoadIndex() const {
+        return roadIndex;
+    }
+
+    // Mutator for road index
+    void setRoadIndex(int roadIndex) {
+        this->roadIndex = roadIndex;
+    }
+
+    // Accessor for emergency status
+    bool isEmergencyVehicle() const {
+        return isEmergency;
+    }
+
+    // Mutator for emergency status
+    void setIsEmergency(bool isEmergency) {
+        this->isEmergency = isEmergency;
+    }
+
     void move() {
         cout << setw(15) << left << name << " is moving on road " << roadIndex + 1 << ".\n";
     }
@@ -29,26 +59,6 @@ public:
         if (!isEmergency) {
             cout << setw(15) << left << name << " has stopped on road " << roadIndex + 1 << ".\n";
         }
-    }
-
-    bool isEmergencyVehicle() const {
-        return isEmergency;
-    }
-
-    int getRoadIndex() const {
-        return roadIndex;
-    }
-
-    void setName(const string& name) {
-        this->name = name;
-    }
-
-    void setRoadIndex(int roadIndex) {
-        this->roadIndex = roadIndex;
-    }
-
-    void setIsEmergency(bool isEmergency) {
-        this->isEmergency = isEmergency;
     }
 
     // Static Member Function to get total vehicles
@@ -76,20 +86,26 @@ class TrafficLight {
 public:
     TrafficLight() : state(LightState::RED) {}
 
+    // Accessor for traffic light state
+    LightState getState() const {
+        return state;
+    }
+
+    // Mutator for traffic light state
+    void setState(LightState newState) {
+        state = newState;
+    }
+
     void setGreen() {
-        state = LightState::GREEN;
+        setState(LightState::GREEN);
     }
 
     void setYellow() {
-        state = LightState::YELLOW;
+        setState(LightState::YELLOW);
     }
 
     void setRed() {
-        state = LightState::RED;
-    }
-
-    LightState getState() const {
-        return state;
+        setState(LightState::RED);
     }
 
     string getStateString() const {
@@ -114,7 +130,7 @@ public:
 private:
     LightState state;
 
-    static int totalTrafficLights;  // Static variable to keep track of total traffic lights
+    static int totalTrafficLights;
 };
 
 // Initialize static member
@@ -124,28 +140,28 @@ class TrafficSimulation {
 public:
     TrafficSimulation(int numVehicles, int numRoads)
         : numVehicles(numVehicles), numRoads(numRoads) {
-        vehicles = new Vehicle*[numVehicles];  // Array of pointers to Vehicle objects
+        vehicles = new Vehicle*[numVehicles];
         for (int i = 0; i < numVehicles; ++i) {
-            vehicles[i] = new Vehicle();  // Allocate each Vehicle object
-            Vehicle::incrementTotalVehicles();  // Increment the total vehicle count
+            vehicles[i] = new Vehicle();
+            Vehicle::incrementTotalVehicles();
         }
-        trafficLights = new TrafficLight*[numRoads];  // Array of pointers to TrafficLight objects
+        trafficLights = new TrafficLight*[numRoads];
         for (int i = 0; i < numRoads; ++i) {
-            trafficLights[i] = new TrafficLight();  // Allocate each TrafficLight object
-            TrafficLight::incrementTotalTrafficLights();  // Increment the total traffic light count
+            trafficLights[i] = new TrafficLight();
+            TrafficLight::incrementTotalTrafficLights();
         }
     }
 
     ~TrafficSimulation() {
         for (int i = 0; i < numVehicles; ++i) {
-            delete vehicles[i];  // Free each Vehicle object
+            delete vehicles[i];
         }
-        delete[] vehicles;  // Free the array of pointers to Vehicle objects
-        
+        delete[] vehicles;
+
         for (int i = 0; i < numRoads; ++i) {
-            delete trafficLights[i];  // Free each TrafficLight object
+            delete trafficLights[i];
         }
-        delete[] trafficLights;  // Free the array of pointers to TrafficLight objects
+        delete[] trafficLights;
     }
 
     void addVehicle(const Vehicle& vehicle, int index) {
@@ -168,15 +184,15 @@ public:
 
             for (int j = 0; j < numRoads; ++j) {
                 if (j == i % numRoads) {
-                    trafficLights[j]->setYellow();  // Set yellow before green
+                    trafficLights[j]->setYellow();
                 } else {
-                    trafficLights[j]->setRed();  // Other roads are red
+                    trafficLights[j]->setRed();
                 }
             }
 
             cout << "\n** Yellow Alert **\n";
             printTrafficLightStates();
-            
+
             handleVehicleActions(LightState::YELLOW);
 
             trafficLights[i % numRoads]->setGreen();
@@ -196,8 +212,8 @@ public:
 private:
     int numVehicles;
     int numRoads;
-    Vehicle** vehicles;  // Array of pointers to Vehicle objects
-    TrafficLight** trafficLights;  // Array of pointers to TrafficLight objects
+    Vehicle** vehicles;
+    TrafficLight** trafficLights;
 
     void printTrafficLightStates() const {
         for (int j = 0; j < numRoads; ++j) {
@@ -242,7 +258,7 @@ int main() {
         cin >> isEmergency;
 
         Vehicle vehicle(name, roadIndex, isEmergency);
-        simulation.addVehicle(vehicle, i);  // Add vehicle to the array
+        simulation.addVehicle(vehicle, i);
     }
 
     simulation.run();
