@@ -10,35 +10,24 @@ enum class LightState {
     GREEN
 };
 
-// The Vehicle class hides the internal details of a vehicle and only exposes necessary methods.
-// This is an example of **abstraction** in OOP.
 class Vehicle {
 public:
+    // Default constructor (Type 1)
+    Vehicle() : name("Unnamed"), roadIndex(0), isEmergency(false) {
+        // This is the default constructor, initializes Vehicle with default values
+    }
+
+    // Parameterized constructor (Type 2)
     Vehicle(const string& name, int roadIndex, bool isEmergency = false)
-        : name(name), roadIndex(roadIndex), isEmergency(isEmergency) {}
-
-    // The public method getName() allows access to the vehicle's name without exposing how it's stored.
-    string getName() const {
-        return name;
+        : name(name), roadIndex(roadIndex), isEmergency(isEmergency) {
+        // This is the parameterized constructor, initializes Vehicle with provided values
     }
 
-    void setName(const string& newName) {
-        name = newName;
-    }
-
-    int getRoadIndex() const {
-        return roadIndex;
-    }
-
-    void setRoadIndex(int newIndex) {
-        roadIndex = newIndex;
-    }
-
-    // The method isEmergencyVehicle() exposes whether the vehicle is an emergency vehicle,
-    // hiding the internal variable `isEmergency` from direct access (another example of abstraction).
-    bool isEmergencyVehicle() const {
-        return isEmergency;
-    }
+    string getName() const { return name; }
+    void setName(const string& newName) { name = newName; }
+    int getRoadIndex() const { return roadIndex; }
+    void setRoadIndex(int newIndex) { roadIndex = newIndex; }
+    bool isEmergencyVehicle() const { return isEmergency; }
 
     void move() const {
         cout << setw(15) << left << name << " is moving on road " << roadIndex + 1 << ".\n";
@@ -48,8 +37,6 @@ public:
         cout << setw(15) << left << name << " is slowing down on road " << roadIndex + 1 << ".\n";
     }
 
-    // The stop() method hides the complex logic of what happens when a vehicle stops,
-    // providing an abstraction of the action to the user of the class.
     void stop() const {
         if (!isEmergency) {
             cout << setw(15) << left << name << " has stopped on road " << roadIndex + 1 << ".\n";
@@ -62,62 +49,48 @@ private:
     bool isEmergency;
 };
 
-// The TrafficLight class provides an abstraction for managing traffic light states.
-// Users of this class don't need to know how the light state is stored or updated.
 class TrafficLight {
 public:
-    TrafficLight() : state(LightState::RED) {}
-
-    // Public methods expose functionality to change the light state
-    // without revealing the internal implementation of how the state is managed.
-    void setGreen() {
-        state = LightState::GREEN;
+    // Default constructor
+    TrafficLight() : state(LightState::RED) {
+        // This is the default constructor, initializes traffic light to RED state
     }
 
-    void setYellow() {
-        state = LightState::YELLOW;
-    }
-
-    void setRed() {
-        state = LightState::RED;
-    }
-
-    // The getState() method provides a way to access the current light state without
-    // exposing the internal representation of the state.
-    LightState getState() const {
-        return state;
-    }
+    void setGreen() { state = LightState::GREEN; }
+    void setYellow() { state = LightState::YELLOW; }
+    void setRed() { state = LightState::RED; }
+    LightState getState() const { return state; }
 
 private:
     LightState state;
 };
 
-// The TrafficSimulation class abstracts the complexity of managing the simulation of vehicles and traffic lights.
-// It provides high-level methods like run() and addVehicle() that hide internal logic.
 class TrafficSimulation {
 public:
+    // Parameterized constructor to initialize the number of vehicles and roads
     TrafficSimulation(int numVehicles, int numRoads)
         : numVehicles(numVehicles), numRoads(numRoads) {
-        vehicles.reserve(numVehicles);
-        trafficLights.resize(numRoads);
+        vehicles.reserve(numVehicles); // Reserves space for vehicles
+        trafficLights.resize(numRoads); // Resizes the vector to hold traffic lights
+
+        // Allocating memory for each traffic light dynamically
         for (int i = 0; i < numRoads; ++i) {
-            trafficLights[i] = new TrafficLight();
+            trafficLights[i] = new TrafficLight(); // Constructor for TrafficLight called here
         }
     }
 
+    // Destructor to release memory allocated for traffic lights
     ~TrafficSimulation() {
+        // Destructor cleans up dynamically allocated memory
         for (TrafficLight* light : trafficLights) {
-            delete light;
+            delete light; // Destructor for each TrafficLight object called here
         }
     }
 
-    // The addVehicle() method abstracts the logic of adding vehicles to the simulation.
     void addVehicle(const Vehicle& vehicle) {
-        vehicles.push_back(vehicle);
+        vehicles.push_back(vehicle); // Adds vehicle to the vector
     }
 
-    // The run() method abstracts the entire process of running a traffic simulation,
-    // providing a simple interface for users of the class.
     void run() {
         int cycles;
         cout << "Enter the number of cycles for the simulation: ";
@@ -140,7 +113,6 @@ public:
 
             cout << "\n** Yellow Alert **\n";
             printTrafficLightStates();
-            
             handleVehicleActions(LightState::YELLOW);
 
             trafficLights[i % numRoads]->setGreen();
@@ -161,8 +133,6 @@ private:
     vector<Vehicle> vehicles;
     vector<TrafficLight*> trafficLights;
 
-    // The private method printTrafficLightStates() abstracts the process of printing the current
-    // states of all traffic lights, providing a clean interface to the rest of the class.
     void printTrafficLightStates() const {
         for (int j = 0; j < numRoads; ++j) {
             string stateStr = (trafficLights[j]->getState() == LightState::GREEN) ? "GREEN" :
@@ -172,8 +142,6 @@ private:
         }
     }
 
-    // The handleVehicleActions() method provides an abstraction for managing vehicle behavior
-    // based on the current traffic light state, hiding complex logic.
     void handleVehicleActions(LightState lightState) {
         for (const Vehicle& vehicle : vehicles) {
             LightState roadLightState = trafficLights[vehicle.getRoadIndex()]->getState();
@@ -197,6 +165,7 @@ int main() {
     cout << "Enter the number of vehicles in the simulation: ";
     cin >> numVehicles;
 
+    // Constructor for TrafficSimulation called here
     TrafficSimulation simulation(numVehicles, numRoads);
 
     for (int i = 0; i < numVehicles; ++i) {
@@ -210,11 +179,13 @@ int main() {
         cout << "Is this vehicle an emergency vehicle? (1 for Yes, 0 for No): ";
         cin >> isEmergency;
 
+        // Parameterized constructor for Vehicle called here
         Vehicle vehicle(name, roadIndex, isEmergency);
-        simulation.addVehicle(vehicle);
+        simulation.addVehicle(vehicle); // Adds vehicle to the simulation
     }
 
     simulation.run();
 
+    // Destructor for TrafficSimulation called here when the program ends
     return 0;
 }
