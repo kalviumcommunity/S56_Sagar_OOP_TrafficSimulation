@@ -10,166 +10,114 @@ enum class LightState {
     GREEN
 };
 
+// The Vehicle class hides the internal details of a vehicle and only exposes necessary methods.
+// This is an example of **abstraction** in OOP.
 class Vehicle {
 public:
-    Vehicle() : name("Unknown"), roadIndex(0), isEmergency(false) {}
-
     Vehicle(const string& name, int roadIndex, bool isEmergency = false)
         : name(name), roadIndex(roadIndex), isEmergency(isEmergency) {}
 
-    // Accessor (getter) for vehicle name
+    // The public method getName() allows access to the vehicle's name without exposing how it's stored.
     string getName() const {
         return name;
     }
 
-    // Mutator (setter) for vehicle name
-    void setName(const string& name) {
-        this->name = name;
+    void setName(const string& newName) {
+        name = newName;
     }
 
-    // Accessor for road index
     int getRoadIndex() const {
         return roadIndex;
     }
 
-    // Mutator for road index
-    void setRoadIndex(int roadIndex) {
-        this->roadIndex = roadIndex;
+    void setRoadIndex(int newIndex) {
+        roadIndex = newIndex;
     }
 
-    // Accessor for emergency status
+    // The method isEmergencyVehicle() exposes whether the vehicle is an emergency vehicle,
+    // hiding the internal variable `isEmergency` from direct access (another example of abstraction).
     bool isEmergencyVehicle() const {
         return isEmergency;
     }
 
-    // Mutator for emergency status
-    void setIsEmergency(bool isEmergency) {
-        this->isEmergency = isEmergency;
-    }
-
-    void move() {
+    void move() const {
         cout << setw(15) << left << name << " is moving on road " << roadIndex + 1 << ".\n";
     }
 
-    void slowDown() {
+    void slowDown() const {
         cout << setw(15) << left << name << " is slowing down on road " << roadIndex + 1 << ".\n";
     }
 
-    void stop() {
+    // The stop() method hides the complex logic of what happens when a vehicle stops,
+    // providing an abstraction of the action to the user of the class.
+    void stop() const {
         if (!isEmergency) {
             cout << setw(15) << left << name << " has stopped on road " << roadIndex + 1 << ".\n";
         }
-    }
-
-    // Static Member Function to get total vehicles
-    static int getTotalVehicles() {
-        return totalVehicles;
-    }
-
-    // Static Member Function to increment total vehicles
-    static void incrementTotalVehicles() {
-        ++totalVehicles;
     }
 
 private:
     string name;
     int roadIndex;
     bool isEmergency;
-
-    static int totalVehicles;  // Static variable to keep track of total vehicles
 };
 
-// Initialize static member
-int Vehicle::totalVehicles = 0;
-
+// The TrafficLight class provides an abstraction for managing traffic light states.
+// Users of this class don't need to know how the light state is stored or updated.
 class TrafficLight {
 public:
     TrafficLight() : state(LightState::RED) {}
 
-    // Accessor for traffic light state
+    // Public methods expose functionality to change the light state
+    // without revealing the internal implementation of how the state is managed.
+    void setGreen() {
+        state = LightState::GREEN;
+    }
+
+    void setYellow() {
+        state = LightState::YELLOW;
+    }
+
+    void setRed() {
+        state = LightState::RED;
+    }
+
+    // The getState() method provides a way to access the current light state without
+    // exposing the internal representation of the state.
     LightState getState() const {
         return state;
     }
 
-    // Mutator for traffic light state
-    void setState(LightState newState) {
-        state = newState;
-    }
-
-    void setGreen() {
-        setState(LightState::GREEN);
-    }
-
-    void setYellow() {
-        setState(LightState::YELLOW);
-    }
-
-    void setRed() {
-        setState(LightState::RED);
-    }
-
-    string getStateString() const {
-        switch (state) {
-            case LightState::GREEN: return "GREEN";
-            case LightState::YELLOW: return "YELLOW";
-            case LightState::RED: return "RED";
-            default: return "UNKNOWN";
-        }
-    }
-
-    // Static Member Function to get total traffic lights
-    static int getTotalTrafficLights() {
-        return totalTrafficLights;
-    }
-
-    // Static Member Function to increment total traffic lights
-    static void incrementTotalTrafficLights() {
-        ++totalTrafficLights;
-    }
-
 private:
     LightState state;
-
-    static int totalTrafficLights;
 };
 
-// Initialize static member
-int TrafficLight::totalTrafficLights = 0;
-
+// The TrafficSimulation class abstracts the complexity of managing the simulation of vehicles and traffic lights.
+// It provides high-level methods like run() and addVehicle() that hide internal logic.
 class TrafficSimulation {
 public:
     TrafficSimulation(int numVehicles, int numRoads)
         : numVehicles(numVehicles), numRoads(numRoads) {
-        vehicles = new Vehicle*[numVehicles];
-        for (int i = 0; i < numVehicles; ++i) {
-            vehicles[i] = new Vehicle();
-            Vehicle::incrementTotalVehicles();
-        }
-        trafficLights = new TrafficLight*[numRoads];
+        vehicles.reserve(numVehicles);
+        trafficLights.resize(numRoads);
         for (int i = 0; i < numRoads; ++i) {
             trafficLights[i] = new TrafficLight();
-            TrafficLight::incrementTotalTrafficLights();
         }
     }
 
     ~TrafficSimulation() {
-        for (int i = 0; i < numVehicles; ++i) {
-            delete vehicles[i];
-        }
-        delete[] vehicles;
-
-        for (int i = 0; i < numRoads; ++i) {
-            delete trafficLights[i];
-        }
-        delete[] trafficLights;
-    }
-
-    void addVehicle(const Vehicle& vehicle, int index) {
-        if (index < numVehicles) {
-            *vehicles[index] = vehicle;
+        for (TrafficLight* light : trafficLights) {
+            delete light;
         }
     }
 
+    // The addVehicle() method abstracts the logic of adding vehicles to the simulation.
+    void addVehicle(const Vehicle& vehicle) {
+        vehicles.push_back(vehicle);
+    }
+
+    // The run() method abstracts the entire process of running a traffic simulation,
+    // providing a simple interface for users of the class.
     void run() {
         int cycles;
         cout << "Enter the number of cycles for the simulation: ";
@@ -192,7 +140,7 @@ public:
 
             cout << "\n** Yellow Alert **\n";
             printTrafficLightStates();
-
+            
             handleVehicleActions(LightState::YELLOW);
 
             trafficLights[i % numRoads]->setGreen();
@@ -205,31 +153,36 @@ public:
         }
 
         cout << "Simulation ended.\n";
-        cout << "Total Vehicles: " << Vehicle::getTotalVehicles() << endl;
-        cout << "Total Traffic Lights: " << TrafficLight::getTotalTrafficLights() << endl;
     }
 
 private:
     int numVehicles;
     int numRoads;
-    Vehicle** vehicles;
-    TrafficLight** trafficLights;
+    vector<Vehicle> vehicles;
+    vector<TrafficLight*> trafficLights;
 
+    // The private method printTrafficLightStates() abstracts the process of printing the current
+    // states of all traffic lights, providing a clean interface to the rest of the class.
     void printTrafficLightStates() const {
         for (int j = 0; j < numRoads; ++j) {
-            cout << "Road " << j + 1 << ": Traffic light is " << trafficLights[j]->getStateString() << ".\n";
+            string stateStr = (trafficLights[j]->getState() == LightState::GREEN) ? "GREEN" :
+                              (trafficLights[j]->getState() == LightState::YELLOW) ? "YELLOW" :
+                              "RED";
+            cout << "Road " << j + 1 << ": Traffic light is " << stateStr << ".\n";
         }
     }
 
+    // The handleVehicleActions() method provides an abstraction for managing vehicle behavior
+    // based on the current traffic light state, hiding complex logic.
     void handleVehicleActions(LightState lightState) {
-        for (int i = 0; i < numVehicles; ++i) {
-            LightState roadLightState = trafficLights[vehicles[i]->getRoadIndex()]->getState();
-            if (roadLightState == LightState::GREEN || vehicles[i]->isEmergencyVehicle()) {
-                vehicles[i]->move();
+        for (const Vehicle& vehicle : vehicles) {
+            LightState roadLightState = trafficLights[vehicle.getRoadIndex()]->getState();
+            if (roadLightState == LightState::GREEN || vehicle.isEmergencyVehicle()) {
+                vehicle.move();
             } else if (roadLightState == LightState::YELLOW) {
-                vehicles[i]->slowDown();
+                vehicle.slowDown();
             } else {
-                vehicles[i]->stop();
+                vehicle.stop();
             }
         }
     }
@@ -258,7 +211,7 @@ int main() {
         cin >> isEmergency;
 
         Vehicle vehicle(name, roadIndex, isEmergency);
-        simulation.addVehicle(vehicle, i);
+        simulation.addVehicle(vehicle);
     }
 
     simulation.run();
