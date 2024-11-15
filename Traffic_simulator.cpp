@@ -11,14 +11,13 @@ enum class LightState {
     GREEN
 };
 
-// Abstract Base Class Vehicle - Represents vehicles
 class Vehicle {
 public:
     Vehicle(const string& name, int roadIndex)
         : name(name), roadIndex(roadIndex) {}
 
-    virtual void move() const = 0;
-    virtual void stop() const = 0;
+    virtual void move() const = 0; // Each subclass provides its specific move behavior.
+    virtual void stop() const = 0; // Each subclass provides its specific stop behavior.
     
     string getName() const { return name; }
     int getRoadIndex() const { return roadIndex; }
@@ -28,37 +27,38 @@ protected:
     int roadIndex;
 };
 
-// Derived Class EmergencyVehicle - Represents an emergency vehicle
 class EmergencyVehicle : public Vehicle {
 public:
     EmergencyVehicle(const string& name, int roadIndex)
         : Vehicle(name, roadIndex) {}
 
     void move() const override {
+        // Emergency vehicles always move regardless of the light.
         cout << setw(15) << left << name << " (EMERGENCY) is moving on road " << roadIndex + 1 << ".\n";
     }
 
     void stop() const override {
+        // Emergency vehicles never stop at traffic lights. This is handled in the subclass.
         cout << setw(15) << left << name << " is an emergency vehicle and doesn't stop.\n";
     }
 };
 
-// Derived Class RegularVehicle - Represents a regular vehicle
 class RegularVehicle : public Vehicle {
 public:
     RegularVehicle(const string& name, int roadIndex)
         : Vehicle(name, roadIndex) {}
 
     void move() const override {
+        // Regular vehicles move when the light is green.
         cout << setw(15) << left << name << " is moving on road " << roadIndex + 1 << ".\n";
     }
 
     void stop() const override {
+        // Regular vehicles stop at the red light.
         cout << setw(15) << left << name << " is stopped at the red light on road " << roadIndex + 1 << ".\n";
     }
 };
 
-// A separate class responsible for managing traffic lights
 class TrafficLightManager {
 public:
     TrafficLightManager(int numRoads) : trafficLights(numRoads, LightState::RED) {}
@@ -75,7 +75,6 @@ private:
     vector<LightState> trafficLights;
 };
 
-// A separate class responsible for managing vehicles
 class VehicleManager {
 public:
     void addVehicle(unique_ptr<Vehicle> vehicle) {
@@ -90,47 +89,46 @@ private:
     vector<unique_ptr<Vehicle>> vehicles;
 };
 
-// Base Simulation Strategy Interface - Open for Extension, Closed for Modification
 class ISimulationStrategy {
 public:
     virtual void run(const VehicleManager& vehicleManager, TrafficLightManager& trafficLightManager, int numCycles) = 0;
     virtual ~ISimulationStrategy() = default;
 };
 
-// Basic Traffic Simulation Strategy - Original behavior
 class BasicTrafficSimulation : public ISimulationStrategy {
 public:
     void run(const VehicleManager& vehicleManager, TrafficLightManager& trafficLightManager, int numCycles) override {
         for (int i = 0; i < numCycles; ++i) {
             cout << "Cycle " << i + 1 << "\n";
-            trafficLightManager.changeLight(i % 3, LightState::GREEN); // Change light for simplicity
+            trafficLightManager.changeLight(i % 3, LightState::GREEN);
             
+            // Here, the behavior of move/stop will be correctly substituted
+            // depending on the actual object type (Emergency or Regular vehicle).
             for (const auto& v : vehicleManager.getVehicles()) {
                 if (trafficLightManager.getLightState(v->getRoadIndex()) == LightState::GREEN) {
-                    v->move();
+                    v->move(); // Emergency vehicles move regardless of light state.
                 } else {
-                    v->stop();
+                    v->stop(); // Regular vehicles stop at the red light, emergency vehicles don't.
                 }
             }
         }
     }
 };
 
-// Advanced Traffic Simulation Strategy - Extended behavior
 class AdvancedTrafficSimulation : public ISimulationStrategy {
 public:
     void run(const VehicleManager& vehicleManager, TrafficLightManager& trafficLightManager, int numCycles) override {
         for (int i = 0; i < numCycles; ++i) {
             cout << "Advanced Cycle " << i + 1 << "\n";
 
+            // In this strategy, we allow all vehicles to move regardless of traffic light state.
             for (const auto& v : vehicleManager.getVehicles()) {
-                v->move();  // In advanced simulation, all vehicles move regardless of light
+                v->move(); // Move every vehicle (this will be a no-op for EmergencyVehicle).
             }
         }
     }
 };
 
-// TrafficSimulation Class - Uses a strategy to run the simulation
 class TrafficSimulation {
 public:
     TrafficSimulation(int numVehicles, int numRoads, unique_ptr<ISimulationStrategy> strategy)
@@ -152,7 +150,7 @@ protected:
     int numVehicles, numRoads;
     VehicleManager vehicleManager;
     TrafficLightManager trafficLightManager;
-    unique_ptr<ISimulationStrategy> simulationStrategy;  // Strategy pattern for extensibility
+    unique_ptr<ISimulationStrategy> simulationStrategy;
 };
 
 int main() {
@@ -163,7 +161,6 @@ int main() {
     cout << "Enter number of vehicles: ";
     cin >> numVehicles;
 
-    // Choose the simulation strategy at runtime (OCP: Easily extendable without modifying existing code)
     unique_ptr<ISimulationStrategy> strategy = make_unique<AdvancedTrafficSimulation>();
 
     TrafficSimulation sim(numVehicles, numRoads, move(strategy));
